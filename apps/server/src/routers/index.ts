@@ -1,4 +1,5 @@
 import { protectedProcedure, publicProcedure } from "../lib/orpc";
+import { feedRouter } from "./feed";
 import { todoRouter } from "./todo";
 
 export const appRouter = {
@@ -12,5 +13,6 @@ export const appRouter = {
     };
   }),
   todo: todoRouter,
+  feed: feedRouter,
 };
 export type AppRouter = typeof appRouter;
