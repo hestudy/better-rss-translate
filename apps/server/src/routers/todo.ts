@@ -8,15 +8,12 @@ export const todoRouter = {
   getAll: publicProcedure.handler(async () => {
     return await db.select().from(todo);
   }),
-
   create: publicProcedure
     .input(z.object({ text: z.string().min(1) }))
     .handler(async ({ input }) => {
-      return await db
-        .insert(todo)
-        .values({
-          text: input.text,
-        });
+      return await db.insert(todo).values({
+        text: input.text,
+      });
     }),
 
   toggle: publicProcedure
@@ -34,4 +31,3 @@ export const todoRouter = {
       return await db.delete(todo).where(eq(todo.id, input.id));
     }),
 };
-
