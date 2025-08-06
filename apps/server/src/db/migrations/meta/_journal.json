@@ -15,6 +15,13 @@
       "when": 1754402828306,
       "tag": "0001_medical_vulture",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1754487360990,
+      "tag": "0002_slimy_ezekiel",
+      "breakpoints": true
     }
   ]
 }

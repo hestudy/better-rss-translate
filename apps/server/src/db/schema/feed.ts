@@ -10,6 +10,7 @@ export const feed = sqliteTable("feed", {
   title: text("title"),
   description: text("description"),
   link: text("link"),
+  cron: text("cron"),
   createDate: integer("create_date", { mode: "timestamp" }).$defaultFn(
     () => new Date()
   ),
@@ -17,7 +18,9 @@ export const feed = sqliteTable("feed", {
     .$defaultFn(() => new Date())
     .$onUpdateFn(() => new Date()),
   jobId: text("job_id"),
-  jobStatus: text("job_status"),
+  jobStatus: text("job_status", {
+    enum: ["active", "waiting", "completed", "failed"],
+  }),
   userId: text("user_id")
     .notNull()
     .references(() => user.id),

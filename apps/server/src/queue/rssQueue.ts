@@ -6,7 +6,11 @@ import Parser from "rss-parser";
 
 const parser = new Parser();
 
-export const rssQueue = new Queue("rssqueue", {
+export const rssQueue = new Queue<{
+  feedId: string;
+  feedUrl: string;
+  userId: string;
+}>("rssqueue", {
   connection: {
     url: process.env.REDIS_URL,
   },
@@ -38,10 +42,36 @@ const rssWorker = new Worker<{
   }
 );
 
-rssWorker.on("completed", (job) => {
-  console.log(`Job ${job.id} completed!`);
+rssQueue.on("waiting", async (job) => {
+  console.log(`Job ${job.id} is waiting!`);
+  await db
+    .update(feed)
+    .set({ jobStatus: "waiting" })
+    .where(eq(feed.id, job.data.feedId));
 });
 
-rssWorker.on("failed", (job, err) => {
+rssWorker.on("active", async (job) => {
+  console.log(`Job ${job.id} is active!`);
+  await db
+    .update(feed)
+    .set({ jobStatus: "active" })
+    .where(eq(feed.id, job.data.feedId));
+});
+
+rssWorker.on("completed", async (job) => {
+  console.log(`Job ${job.id} completed!`);
+  await db
+    .update(feed)
+    .set({ jobStatus: "completed" })
+    .where(eq(feed.id, job.data.feedId));
+});
+
+rssWorker.on("failed", async (job, err) => {
   console.log(`Job ${job?.id} failed with ${err.message}`);
+  if (job?.data.feedId) {
+    await db
+      .update(feed)
+      .set({ jobStatus: "failed" })
+      .where(eq(feed.id, job.data.feedId));
+  }
 });
