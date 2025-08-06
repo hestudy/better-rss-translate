@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TodosRouteImport } from './routes/todos'
+import { Route as QueueManagementRouteImport } from './routes/queue-management'
+import { Route as QueueEnhancedRouteImport } from './routes/queue-enhanced'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +19,16 @@ import { Route as IndexRouteImport } from './routes/index'
 const TodosRoute = TodosRouteImport.update({
   id: '/todos',
   path: '/todos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueManagementRoute = QueueManagementRouteImport.update({
+  id: '/queue-management',
+  path: '/queue-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueEnhancedRoute = QueueEnhancedRouteImport.update({
+  id: '/queue-enhanced',
+  path: '/queue-enhanced',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -39,12 +51,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/queue-enhanced': typeof QueueEnhancedRoute
+  '/queue-management': typeof QueueManagementRoute
   '/todos': typeof TodosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/queue-enhanced': typeof QueueEnhancedRoute
+  '/queue-management': typeof QueueManagementRoute
   '/todos': typeof TodosRoute
 }
 export interface FileRoutesById {
@@ -52,20 +68,43 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/queue-enhanced': typeof QueueEnhancedRoute
+  '/queue-management': typeof QueueManagementRoute
   '/todos': typeof TodosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/todos'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/queue-enhanced'
+    | '/queue-management'
+    | '/todos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/todos'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/todos'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/queue-enhanced'
+    | '/queue-management'
+    | '/todos'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/queue-enhanced'
+    | '/queue-management'
+    | '/todos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  QueueEnhancedRoute: typeof QueueEnhancedRoute
+  QueueManagementRoute: typeof QueueManagementRoute
   TodosRoute: typeof TodosRoute
 }
 
@@ -76,6 +115,20 @@ declare module '@tanstack/react-router' {
       path: '/todos'
       fullPath: '/todos'
       preLoaderRoute: typeof TodosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue-management': {
+      id: '/queue-management'
+      path: '/queue-management'
+      fullPath: '/queue-management'
+      preLoaderRoute: typeof QueueManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue-enhanced': {
+      id: '/queue-enhanced'
+      path: '/queue-enhanced'
+      fullPath: '/queue-enhanced'
+      preLoaderRoute: typeof QueueEnhancedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -106,6 +159,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  QueueEnhancedRoute: QueueEnhancedRoute,
+  QueueManagementRoute: QueueManagementRoute,
   TodosRoute: TodosRoute,
 }
 export const routeTree = rootRouteImport

@@ -6,8 +6,10 @@ import UserMenu from "./user-menu";
 export default function Header() {
   const links = [
     { to: "/", label: "Home" },
-      { to: "/dashboard", label: "Dashboard" },
+    { to: "/dashboard", label: "Dashboard" },
     { to: "/todos", label: "Todos" },
+    { to: "/queue-management", label: "Queue Management" },
+    { to: "/queue-enhanced", label: "Queue Enhanced" },
   ];
 
   return (
@@ -16,10 +18,7 @@ export default function Header() {
         <nav className="flex gap-4 text-lg">
           {links.map(({ to, label }) => {
             return (
-              <Link
-                key={to}
-                to={to}
-              >
+              <Link key={to} to={to}>
                 {label}
               </Link>
             );
