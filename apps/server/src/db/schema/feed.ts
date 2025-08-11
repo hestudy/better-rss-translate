@@ -14,6 +14,8 @@ export const feed = sqliteTable("feed", {
   createDate: integer("create_date", { mode: "timestamp" }).$defaultFn(
     () => new Date()
   ),
+  shoudScrapy: integer("should_scrapy", { mode: "boolean" }),
+  shouldTranslate: integer("should_translate", { mode: "boolean" }),
   lastUpdate: integer("last_update", { mode: "timestamp" })
     .$defaultFn(() => new Date())
     .$onUpdateFn(() => new Date()),
@@ -50,6 +52,18 @@ export const feeditem = sqliteTable("feeditem", {
   isoDate: text("pub_date"),
   guid: text("guid"),
   content: text("content"),
+  scrapyContent: text("scrapy_content"),
+  scrapyJobId: text("scrapy_job_id"),
+  scrapyJobStatus: text("scrapy_job_status", {
+    enum: ["active", "waiting", "completed", "failed"],
+  }),
+  translateTitle: text("translate_title"),
+  translateContentSnippet: text("translate_contentSnippet"),
+  translateContent: text("translate_content"),
+  translateJobId: text("translate_job_id"),
+  translateJobStatus: text("translate_job_status", {
+    enum: ["active", "waiting", "completed", "failed"],
+  }),
   categories: text("categories", { mode: "json" }).$type<string[]>(),
   createDate: integer("create_date", { mode: "timestamp" }).$defaultFn(
     () => new Date()

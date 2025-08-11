@@ -3,6 +3,7 @@ import { feed, feeditem } from "@/db/schema/feed";
 import { Queue, Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import Parser from "rss-parser";
+import { scrapyQueue } from "./scrapyQueue";
 
 const parser = new Parser();
 
@@ -25,14 +26,46 @@ const rssWorker = new Worker<{
   async (job) => {
     const rss = await parser.parseURL(job.data.feedUrl);
     const { items, ...props } = rss;
+    const feedRecord = await db.query.feed.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.id, job.data.feedId);
+      },
+    });
     await db.update(feed).set(props).where(eq(feed.id, job.data.feedId));
 
     for (const item of items) {
-      await db.insert(feeditem).values({
-        feedId: job.data.feedId,
-        userId: job.data.userId,
-        ...item,
+      const existingItem = await db.query.feeditem.findFirst({
+        where(fields, operators) {
+          return operators.and(
+            operators.eq(fields.feedId, job.data.feedId),
+            operators.eq(fields.link, item.link!)
+          );
+        },
       });
+
+      if (existingItem) {
+        continue;
+      }
+
+      const result = await db
+        .insert(feeditem)
+        .values({
+          feedId: job.data.feedId,
+          userId: job.data.userId,
+          ...item,
+        })
+        .returning();
+
+      if (result.at(0)) {
+        const record = result.at(0);
+        if (feedRecord?.shoudScrapy) {
+          await scrapyQueue.add("scrapyqueue", {
+            feedId: job.data.feedId,
+            feeditemId: record!.id,
+            feeditemUrl: item.link!,
+          });
+        }
+      }
     }
   },
   {

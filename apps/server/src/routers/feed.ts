@@ -123,4 +123,51 @@ export const feedRouter = {
 
       return await db.delete(feed).where(eq(feed.id, input.id)).returning();
     }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        cron: z.string(),
+      })
+    )
+    .handler(async ({ input, context }) => {
+      const user = context.session?.user;
+
+      const record = await db.query.feed.findFirst({
+        where(fields, operators) {
+          return operators.and(
+            operators.eq(fields.id, input.id),
+            operators.eq(fields.userId, user.id)
+          );
+        },
+      });
+
+      if (!record) {
+        throw new Error("Feed not found");
+      }
+
+      if (record.jobId) {
+        await rssQueue.remove(record.jobId);
+      }
+
+      const job = await rssQueue.add(
+        "rssqueue",
+        {
+          feedId: record.id,
+          feedUrl: record.feedUrl,
+          userId: user.id,
+        },
+        {
+          repeat: {
+            pattern: input.cron,
+          },
+        }
+      );
+
+      return await db
+        .update(feed)
+        .set({ cron: input.cron, jobId: job.id, jobStatus: "waiting" })
+        .where(eq(feed.id, input.id))
+        .returning();
+    }),
 };
