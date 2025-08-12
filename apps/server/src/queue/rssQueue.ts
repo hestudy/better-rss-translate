@@ -59,7 +59,7 @@ const rssWorker = new Worker<{
       if (result.at(0)) {
         const record = result.at(0);
         if (feedRecord?.shoudScrapy) {
-          await scrapyQueue.add("scrapyqueue", {
+          await scrapyQueue.add(`scrapyqueue-${record!.id}`, {
             feedId: job.data.feedId,
             feeditemId: record!.id,
             feeditemUrl: item.link!,

@@ -9,7 +9,8 @@ it("create feed", async () => {
   const res = await call(
     feedRouter.create,
     {
-      feedUrl: "https://thisweekinreact.com/newsletter/rss.xml",
+      // feedUrl: "https://thisweekinreact.com/newsletter/rss.xml",
+      feedUrl: "https://javascriptweekly.com/rss",
       cron: "0 0 * * *",
       shouldScrapy: true,
       shouldTranslate: true,
@@ -23,12 +24,12 @@ it("create feed", async () => {
   expect(res?.id).toBeDefined();
 });
 
-it.skip("delete feed", async () => {
+it("delete feed", async () => {
   const session = await getLoginSession();
   const res = await call(
     feedRouter.delete,
     {
-      id: "03ec6a25-5740-48b1-a7f3-82c0f6a247fa",
+      id: "68e70da4-a310-4e40-bd06-358dfc71ce4c",
     },
     {
       context: {

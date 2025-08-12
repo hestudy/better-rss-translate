@@ -46,7 +46,7 @@ export const feedRouter = {
       const record = result.at(0);
       if (record) {
         const job = await rssQueue.add(
-          "rssqueue",
+          `rssqueue-${record.id}`,
           {
             feedId: record.id,
             feedUrl: record.feedUrl,
@@ -124,6 +124,7 @@ export const feedRouter = {
       }
 
       if (record.jobId) {
+        await rssQueue.removeJobScheduler(record.jobId);
         await rssQueue.remove(record.jobId);
       }
 
@@ -161,11 +162,12 @@ export const feedRouter = {
       }
 
       if (record.jobId) {
+        await rssQueue.removeJobScheduler(record.jobId);
         await rssQueue.remove(record.jobId);
       }
 
       const job = await rssQueue.add(
-        "rssqueue",
+        `rssqueue-${record.id}`,
         {
           feedId: record.id,
           feedUrl: record.feedUrl,
@@ -177,6 +179,8 @@ export const feedRouter = {
           },
         }
       );
+
+      await job.moveToWait();
 
       const result = await db
         .update(feed)

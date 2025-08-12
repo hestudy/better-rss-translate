@@ -38,7 +38,7 @@ const scrapyWorker = new Worker<{
     });
 
     if (feedRecord?.shouldTranslate) {
-      await translateQueue.add("translatequeue", {
+      await translateQueue.add(`translatequeue-${job.data.feeditemId}`, {
         feeditemId: job.data.feeditemId,
       });
     }
