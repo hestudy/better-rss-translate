@@ -55,13 +55,14 @@ export const feedRouter = {
           {
             repeat: {
               pattern: input.cron,
+              immediately: true,
             },
           }
         );
 
         const jobResult = await db
           .update(feed)
-          .set({ jobId: job.id, jobStatus: "waiting" })
+          .set({ jobId: job.repeatJobKey, jobStatus: "waiting" })
           .where(eq(feed.id, record.id))
           .returning();
 
@@ -124,8 +125,7 @@ export const feedRouter = {
       }
 
       if (record.jobId) {
-        await rssQueue.removeJobScheduler(record.jobId);
-        await rssQueue.remove(record.jobId);
+        await rssQueue.removeRepeatableByKey(record.jobId);
       }
 
       const result = await db
@@ -162,8 +162,7 @@ export const feedRouter = {
       }
 
       if (record.jobId) {
-        await rssQueue.removeJobScheduler(record.jobId);
-        await rssQueue.remove(record.jobId);
+        await rssQueue.removeRepeatableByKey(record.jobId);
       }
 
       const job = await rssQueue.add(
@@ -176,11 +175,10 @@ export const feedRouter = {
         {
           repeat: {
             pattern: input.cron,
+            immediately: true,
           },
         }
       );
-
-      await job.moveToWait();
 
       const result = await db
         .update(feed)

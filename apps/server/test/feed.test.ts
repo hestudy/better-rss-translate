@@ -3,15 +3,16 @@ import { feedRouter } from "@/routers/feed";
 import { call } from "@orpc/server";
 import { expect, it } from "vitest";
 import { getLoginSession } from "./auth.test";
+import { rssQueue } from "@/queue/rssQueue";
 
 it("create feed", async () => {
   const session = await getLoginSession();
   const res = await call(
     feedRouter.create,
     {
-      // feedUrl: "https://thisweekinreact.com/newsletter/rss.xml",
-      feedUrl: "https://javascriptweekly.com/rss",
-      cron: "0 0 * * *",
+      feedUrl: "https://thisweekinreact.com/newsletter/rss.xml",
+      // feedUrl: "https://javascriptweekly.com/rss",
+      cron: "0 * * * *",
       shouldScrapy: true,
       shouldTranslate: true,
     },
@@ -29,7 +30,7 @@ it("delete feed", async () => {
   const res = await call(
     feedRouter.delete,
     {
-      id: "68e70da4-a310-4e40-bd06-358dfc71ce4c",
+      id: "01e0e1c0-751b-43f5-ae80-f652ce4e956d",
     },
     {
       context: {
@@ -46,7 +47,7 @@ it.skip("update feed", async () => {
     feedRouter.update,
     {
       id: "03ec6a25-5740-48b1-a7f3-82c0f6a247fa",
-      cron: "0 0 * * *",
+      cron: "0 * * * *",
       shouldScrapy: true,
       shouldTranslate: true,
     },
@@ -102,4 +103,11 @@ it.skip("translate html", async () => {
   );
   expect(html).toBeDefined();
   console.log(html);
+});
+
+it("get scheduler job", async () => {
+  const job = await rssQueue.getJobScheduler(
+    "repeat:8809524d9352bca981a09efd4d716d89:1755010800000"
+  );
+  console.log(job);
 });
