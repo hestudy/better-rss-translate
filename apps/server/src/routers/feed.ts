@@ -11,6 +11,9 @@ export const feedRouter = {
       z.object({
         feedUrl: z.url(),
         cron: z.string(),
+        shouldScrapy: z.boolean().optional(),
+        shouldTranslate: z.boolean().optional(),
+        translateLanguage: z.string().optional(),
       })
     )
     .handler(async ({ context, input }) => {
@@ -35,6 +38,9 @@ export const feedRouter = {
           feedUrl: input.feedUrl,
           userId: user.id,
           cron: input.cron,
+          shoudScrapy: input.shouldScrapy,
+          shouldTranslate: input.shouldTranslate,
+          translateLanguage: input.translateLanguage,
         })
         .returning();
       const record = result.at(0);
@@ -121,13 +127,21 @@ export const feedRouter = {
         await rssQueue.remove(record.jobId);
       }
 
-      return await db.delete(feed).where(eq(feed.id, input.id)).returning();
+      const result = await db
+        .delete(feed)
+        .where(eq(feed.id, input.id))
+        .returning();
+
+      return result.at(0);
     }),
   update: protectedProcedure
     .input(
       z.object({
         id: z.string(),
         cron: z.string(),
+        shouldScrapy: z.boolean().optional(),
+        shouldTranslate: z.boolean().optional(),
+        translateLanguage: z.string().optional(),
       })
     )
     .handler(async ({ input, context }) => {
@@ -164,10 +178,19 @@ export const feedRouter = {
         }
       );
 
-      return await db
+      const result = await db
         .update(feed)
-        .set({ cron: input.cron, jobId: job.id, jobStatus: "waiting" })
+        .set({
+          cron: input.cron,
+          jobId: job.id,
+          jobStatus: "waiting",
+          shoudScrapy: input.shouldScrapy,
+          shouldTranslate: input.shouldTranslate,
+          translateLanguage: input.translateLanguage,
+        })
         .where(eq(feed.id, input.id))
         .returning();
+
+      return result.at(0);
     }),
 };

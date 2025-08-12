@@ -11,3 +11,28 @@ it.skip("reguster", async () => {
   });
   expect(res.user.id).toBeDefined();
 });
+
+it("login", async () => {
+  const res = await auth.api.signInEmail({
+    body: {
+      email: "demo@demo.com",
+      password: "demodemo",
+    },
+  });
+  expect(res.user.id).toBeDefined();
+});
+
+export const getLoginSession = async () => {
+  const res = await auth.api.signInEmail({
+    body: {
+      email: "demo@demo.com",
+      password: "demodemo",
+    },
+  });
+  const headers = new Headers();
+  headers.append("Authorization", `Bearer ${res.token}`);
+  const session = await auth.api.getSession({
+    headers,
+  });
+  return session;
+};

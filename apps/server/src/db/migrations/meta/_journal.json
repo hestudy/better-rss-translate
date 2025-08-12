@@ -29,6 +29,20 @@
       "when": 1754907749079,
       "tag": "0003_robust_green_goblin",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1754986975858,
+      "tag": "0004_thin_fenris",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1754992370571,
+      "tag": "0005_harsh_bill_hollister",
+      "breakpoints": true
     }
   ]
 }

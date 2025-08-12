@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./auth";
 
@@ -16,6 +15,7 @@ export const feed = sqliteTable("feed", {
   ),
   shoudScrapy: integer("should_scrapy", { mode: "boolean" }),
   shouldTranslate: integer("should_translate", { mode: "boolean" }),
+  translateLanguage: text("translate_language"),
   lastUpdate: integer("last_update", { mode: "timestamp" })
     .$defaultFn(() => new Date())
     .$onUpdateFn(() => new Date()),
@@ -28,23 +28,15 @@ export const feed = sqliteTable("feed", {
     .references(() => user.id),
 });
 
-export const feedRelations = relations(feed, ({ many, one }) => {
-  return {
-    items: many(feeditem),
-    user: one(user, {
-      fields: [feed.userId],
-      references: [user.id],
-    }),
-  };
-});
-
 export const feeditem = sqliteTable("feeditem", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   feedId: text("feed_id")
     .notNull()
-    .references(() => feed.id),
+    .references(() => feed.id, {
+      onDelete: "cascade",
+    }),
   title: text("title"),
   contentSnippet: text("contentSnippet"),
   link: text("link"),
@@ -74,17 +66,4 @@ export const feeditem = sqliteTable("feeditem", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id),
-});
-
-export const feeditemRelations = relations(feeditem, ({ one }) => {
-  return {
-    feed: one(feed, {
-      fields: [feeditem.feedId],
-      references: [feed.id],
-    }),
-    user: one(user, {
-      fields: [feeditem.userId],
-      references: [user.id],
-    }),
-  };
 });

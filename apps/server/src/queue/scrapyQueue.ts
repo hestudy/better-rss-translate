@@ -4,6 +4,7 @@ import { Readability } from "@mozilla/readability";
 import { Queue, Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { JSDOM } from "jsdom";
+import { translateQueue } from "./translateQueue";
 
 export const scrapyQueue = new Queue<{
   feedId: string;
@@ -29,6 +30,18 @@ const scrapyWorker = new Worker<{
       .update(feeditem)
       .set({ scrapyContent: article?.content })
       .where(eq(feeditem.id, job.data.feeditemId));
+
+    const feedRecord = await db.query.feed.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.id, job.data.feedId);
+      },
+    });
+
+    if (feedRecord?.shouldTranslate) {
+      await translateQueue.add("translatequeue", {
+        feeditemId: job.data.feeditemId,
+      });
+    }
   },
   {
     connection: {

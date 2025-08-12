@@ -15,7 +15,11 @@ const app = new Hono();
 
 const serverAdapter = new HonoAdapter(serveStatic);
 createBullBoard({
-  queues: [new BullMQAdapter(rssQueue)],
+  queues: [
+    new BullMQAdapter(rssQueue),
+    new BullMQAdapter(scrapyQueue),
+    new BullMQAdapter(translateQueue),
+  ],
   serverAdapter,
 });
 const basePath = "/ui";
@@ -55,6 +59,8 @@ app.get("/", (c) => {
 
 import { serve } from "@hono/node-server";
 import { rssQueue } from "./queue/rssQueue";
+import { translateQueue } from "./queue/translateQueue";
+import { scrapyQueue } from "./queue/scrapyQueue";
 
 serve(
   {
