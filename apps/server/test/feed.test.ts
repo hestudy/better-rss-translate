@@ -10,8 +10,8 @@ it("create feed", async () => {
   const res = await call(
     feedRouter.create,
     {
-      feedUrl: "https://thisweekinreact.com/newsletter/rss.xml",
-      // feedUrl: "https://javascriptweekly.com/rss",
+      // feedUrl: "https://thisweekinreact.com/newsletter/rss.xml",
+      feedUrl: "https://javascriptweekly.com/rss",
       cron: "0 * * * *",
       shouldScrapy: true,
       shouldTranslate: true,

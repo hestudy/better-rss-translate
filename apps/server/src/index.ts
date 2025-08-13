@@ -4,6 +4,7 @@ import { HonoAdapter } from "@bull-board/hono";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { RPCHandler } from "@orpc/server/fetch";
 import "dotenv/config";
+import { Feed } from "feed";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -57,10 +58,51 @@ app.get("/", (c) => {
   return c.text("OK");
 });
 
+app.get("/rss/:id", async (c) => {
+  const { id } = c.req.param();
+  const record = await db.query.feed.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.id, id);
+    },
+    with: {
+      items: true,
+    },
+  });
+
+  if (!record) {
+    return c.text("Not Found", 404);
+  }
+
+  const feed = new Feed({
+    title: record.title || "",
+    description: record.description || "",
+    id: record.id,
+    link: record.link || "",
+    copyright: `All rights reserved ${new Date().getFullYear()}`,
+    updated: record.lastUpdate || new Date(),
+  });
+
+  record.items.forEach((item) => {
+    feed.addItem({
+      title: item.translateTitle || item.title || "",
+      description:
+        item.translateContentSnippet || item.translateContentSnippet || "",
+      content:
+        item.translateContent || item.scrapyContent || item.content || "",
+      id: item.id,
+      link: item.link || "",
+      date: new Date(item.pubDate!),
+    });
+  });
+
+  return c.text(feed.rss2());
+});
+
 import { serve } from "@hono/node-server";
+import { db } from "./db";
 import { rssQueue } from "./queue/rssQueue";
-import { translateQueue } from "./queue/translateQueue";
 import { scrapyQueue } from "./queue/scrapyQueue";
+import { translateQueue } from "./queue/translateQueue";
 
 serve(
   {
