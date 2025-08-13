@@ -12,7 +12,8 @@ it("create feed", async () => {
     {
       // feedUrl: "https://thisweekinreact.com/newsletter/rss.xml",
       // feedUrl: "https://javascriptweekly.com/rss",
-      feedUrl: "https://code.visualstudio.com/feed.xml",
+      // feedUrl: "https://code.visualstudio.com/feed.xml",
+      feedUrl: "https://nodeweekly.com/rss",
       cron: "0 * * * *",
       shouldScrapy: true,
       shouldTranslate: true,
