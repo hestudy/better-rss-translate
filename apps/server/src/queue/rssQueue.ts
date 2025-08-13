@@ -33,7 +33,8 @@ const rssWorker = new Worker<{
     });
     await db.update(feed).set(props).where(eq(feed.id, job.data.feedId));
 
-    for (const item of items) {
+    // 最多只获取10条
+    for (const item of items.slice(0, 10)) {
       const existingItem = await db.query.feeditem.findFirst({
         where(fields, operators) {
           return operators.and(

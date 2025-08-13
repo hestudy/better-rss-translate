@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { feeditem } from "@/db/schema/feed";
 import { openaiClient } from "@/lib/openaiClient";
-import { Lang, parse } from "@ast-grep/napi";
+import { Lang, parse, SgNode, type Edit } from "@ast-grep/napi";
 import { Queue, Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 
@@ -30,30 +30,6 @@ export const translateText = async (text: string, targetLanguage: string) => {
   });
   console.log("translated: ", res.choices.at(0)?.message.content);
   return res.choices.at(0)?.message.content;
-};
-
-export const translateHtml = async (html: string, targetLanguage: string) => {
-  const ast = parse(Lang.Html, html);
-  const root = ast.root();
-  const nodes = root.findAll({
-    rule: {
-      kind: "text",
-      pattern: "$TEXT",
-    },
-  });
-  const results = await Promise.all(
-    nodes.map(async (node) => {
-      const text = node.text();
-      if (text.length > 2) {
-        const res = await translateText(text, targetLanguage);
-        if (!!res) {
-          return node.replace(res);
-        }
-      }
-    })
-  );
-  const newHtml = root.commitEdits(results.filter((d) => !!d));
-  return newHtml;
 };
 
 const translateWorker = new Worker<{
@@ -154,3 +130,71 @@ translateWorker.on("failed", async (job, err) => {
       .where(eq(feeditem.id, job.data.feeditemId));
   }
 });
+
+// 检查节点是否在 code 或 pre 标签内
+const isInCodeBlock = (node: SgNode): boolean => {
+  // 检查节点是否在特定标签内
+  const codeParent = node.inside({
+    rule: {
+      kind: "element",
+      has: {
+        kind: "start_tag",
+        has: {
+          kind: "tag_name",
+          regex: "^(code|pre|script|style)$",
+        },
+      },
+    },
+  });
+
+  return !!codeParent;
+};
+
+// 检查文本是否应该被翻译
+const shouldTranslateText = (node: SgNode): boolean => {
+  const text = node.text().trim();
+
+  // 跳过空文本或只有空白字符的文本
+  if (text.length <= 2) return false;
+
+  // 跳过纯数字或特殊字符
+  if (/^[\d\s\-_.,;:!?()[\]{}]+$/.test(text)) return false;
+
+  // 检查是否在代码块内
+  if (isInCodeBlock(node)) return false;
+
+  return true;
+};
+
+export const parseHtml = async (
+  html: string,
+  handle: (node: SgNode) => Promise<Edit | undefined>
+) => {
+  const ast = parse(Lang.Html, html);
+  const root = ast.root();
+  const nodes = root.findAll({
+    rule: {
+      kind: "text",
+      pattern: "$TEXT",
+    },
+  });
+  const results = await Promise.all(
+    nodes.map(async (node) => {
+      return handle(node);
+    })
+  );
+  const newHtml = root.commitEdits(results.filter((d) => !!d));
+  return newHtml;
+};
+
+export const translateHtml = async (html: string, targetLanguage: string) => {
+  return parseHtml(html, async (node) => {
+    if (shouldTranslateText(node)) {
+      const text = node.text();
+      const res = await translateText(text, targetLanguage);
+      if (!!res) {
+        return node.replace(res);
+      }
+    }
+  });
+};
