@@ -38,7 +38,7 @@ export const feedRouter = {
           feedUrl: input.feedUrl,
           userId: user.id,
           cron: input.cron,
-          shoudScrapy: input.shouldScrapy,
+          shouldScrapy: input.shouldScrapy,
           shouldTranslate: input.shouldTranslate,
           translateLanguage: input.translateLanguage,
         })
@@ -186,7 +186,7 @@ export const feedRouter = {
           cron: input.cron,
           jobId: job.id,
           jobStatus: "waiting",
-          shoudScrapy: input.shouldScrapy,
+          shouldScrapy: input.shouldScrapy,
           shouldTranslate: input.shouldTranslate,
           translateLanguage: input.translateLanguage,
         })
